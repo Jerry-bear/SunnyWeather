@@ -14,16 +14,37 @@ import kotlin.math.log
 
 //定义一个统一的网络数据源访问入口，对所有网络请求的API进行封装
 object SunneyWeatherNetwork {
-    private val placeService=ServiceCreator.create<PlaceService>()
-//此处serchPlace
+    //对weatherService接口进行封装
+    private val weatherService=ServiceCreator.create(WeatherService::class.java)
+
+    suspend fun getDailyWeather(lng:String,lat:String)= weatherService.getDailyWeather(lng,lat).await()
+
+    suspend fun getRealtimeWeather(lng:String,lat: String)= weatherService.getRealtimeWeather(lng,lat).await()
+
+
+
+
+
+
+
+
+
+
+    private val placeService=ServiceCreator.create(PlaceService::class.java)
     suspend fun searchPlaces(query:String)= placeService.searchPlace(query).await()
+
+
+
+
+
+
 
     private suspend fun <T> Call<T>.await():T{
         return suspendCoroutine {continuation ->
             enqueue(object:Callback<T>{
                 override fun onResponse(call: Call<T>, response: Response<T>) {
                     val body=response.body()
-                    Log.d("返回数据","${body.toString()}")
+                    //Log.d("返回数据","${body.toString()}")
                     if (body!=null)continuation.resume(body)
                     else continuation.resumeWithException(
                         RuntimeException("response body is null"))
